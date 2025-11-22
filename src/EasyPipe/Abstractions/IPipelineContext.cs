@@ -1,7 +1,7 @@
-namespace EasyPipe
-{
-    public interface IPipelineContext
-    {
-        IPipelineContextData Data { get; }
-    }
-}
+// namespace EasyPipe
+// {
+//     public interface IPipelineContext
+//     {
+//         IPipelineContextData Data { get; }
+//     }
+// }

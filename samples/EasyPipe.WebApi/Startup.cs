@@ -29,15 +29,15 @@ namespace EasyPipe.WebApi
                              new OpenApiInfo {Title = "EasyPipe.WebApi", Version = "v1"});
             });
 
-            services.AddPipeline<PipelineRequest, PipelineResponse>()
-                    .WithMiddleware<Middleware1>()
-                    .WithMiddleware<Middleware2>()
-                    .WithMiddleware<Middleware3>();
-            
-            services.AddPipeline<PipelineResponse2>()
-                    .WithMiddleware<Middleware4>()
-                    .WithMiddleware<Middleware5>()
-                    .WithMiddleware<Middleware6>();
+            // services.AddPipeline<PipelineRequest, PipelineResponse>()
+            //         .WithMiddleware<Middleware1>()
+            //         .WithMiddleware<Middleware2>()
+            //         .WithMiddleware<Middleware3>();
+            //
+            // services.AddPipeline<PipelineResponse2>()
+            //         .WithMiddleware<Middleware4>()
+            //         .WithMiddleware<Middleware5>()
+            //         .WithMiddleware<Middleware6>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

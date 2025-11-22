@@ -1,23 +1,18 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Authors>Mohammad ShafieZadeh, Amir Savari</Authors>
+        <Authors>Amir Savari, Mohammad ShafieZadeh</Authors>
         <Title>EasyPipe</Title>
-        <Company>Zoomit</Company>
         <Description>Extension methods to integerate EasyPipe with Microsoft dependency injection</Description>
-        <PackageProjectUrl>https://github.com/zoomit-org/EasyPipe</PackageProjectUrl>
+        <PackageProjectUrl>https://github.com/savariamir/EasyPipe</PackageProjectUrl>
         <PackageIcon>logo.png</PackageIcon>
-        <RepositoryUrl>https://github.com/zoomit-org/EasyPipe</RepositoryUrl>
+        <RepositoryUrl>https://github.com/savariamir/EasyPipe</RepositoryUrl>
         <PackageTags>pipeline</PackageTags>
-        <Version>0.2.0</Version>
+        <Version>0.4.0</Version>
     </PropertyGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0" />
-    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\EasyPipe\EasyPipe.csproj" />
