@@ -6,11 +6,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1B61FDA5
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPipe", "src\EasyPipe\EasyPipe.csproj", "{0C3A2A91-E911-457E-8569-EDFB3432DE5B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPipe.Extensions.MicrosoftDependencyInjection", "src\EasyPipe.Extensions.MicrosoftDependencyInjection\EasyPipe.Extensions.MicrosoftDependencyInjection.csproj", "{89D3A405-47FD-49A1-A53F-03387AE587B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPipe.Extensions.DependencyInjection", "src\EasyPipe.Extensions.DependencyInjection\EasyPipe.Extensions.DependencyInjection.csproj", "{89D3A405-47FD-49A1-A53F-03387AE587B9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{85D73888-476E-4C77-AF27-283A4BE9C72A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPipe.WebApi", "samples\EasyPipe.WebApi\EasyPipe.WebApi.csproj", "{BBB08368-C117-4D88-A954-07844E57011D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{82CD7AF7-8E29-40EB-B5A6-6EC59CFC4D60}"
 ProjectSection(SolutionItems) = preProject
@@ -28,6 +26,10 @@ ProjectSection(SolutionItems) = preProject
 	assets\diagrams\pipeline-flow.jpg = assets\diagrams\pipeline-flow.jpg
 EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPipe.Tests", "tests\EasyPipe.Tests\EasyPipe.Tests.csproj", "{69CDDB89-6955-42B8-B789-B4B5A3FD0411}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EasyPipe.WebApi", "samples\EasyPipe.WebApi\EasyPipe.WebApi.csproj", "{4C625EB2-DF72-494F-9FA2-CF988B7A3776}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,7 +38,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0C3A2A91-E911-457E-8569-EDFB3432DE5B} = {3B723C6F-888E-48CC-8258-5EAF0FB15789}
 		{89D3A405-47FD-49A1-A53F-03387AE587B9} = {3B723C6F-888E-48CC-8258-5EAF0FB15789}
-		{BBB08368-C117-4D88-A954-07844E57011D} = {85D73888-476E-4C77-AF27-283A4BE9C72A}
+		{69CDDB89-6955-42B8-B789-B4B5A3FD0411} = {1B61FDA5-CB4B-45D9-BB81-46E3ECC726BB}
+		{4C625EB2-DF72-494F-9FA2-CF988B7A3776} = {85D73888-476E-4C77-AF27-283A4BE9C72A}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{0C3A2A91-E911-457E-8569-EDFB3432DE5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -47,9 +50,13 @@ Global
 		{89D3A405-47FD-49A1-A53F-03387AE587B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{89D3A405-47FD-49A1-A53F-03387AE587B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{89D3A405-47FD-49A1-A53F-03387AE587B9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BBB08368-C117-4D88-A954-07844E57011D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BBB08368-C117-4D88-A954-07844E57011D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BBB08368-C117-4D88-A954-07844E57011D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BBB08368-C117-4D88-A954-07844E57011D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{69CDDB89-6955-42B8-B789-B4B5A3FD0411}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{69CDDB89-6955-42B8-B789-B4B5A3FD0411}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{69CDDB89-6955-42B8-B789-B4B5A3FD0411}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{69CDDB89-6955-42B8-B789-B4B5A3FD0411}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C625EB2-DF72-494F-9FA2-CF988B7A3776}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C625EB2-DF72-494F-9FA2-CF988B7A3776}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C625EB2-DF72-494F-9FA2-CF988B7A3776}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C625EB2-DF72-494F-9FA2-CF988B7A3776}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

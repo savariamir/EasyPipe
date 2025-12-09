@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net5.0</TargetFramework>
+        <TargetFramework>net9.0</TargetFramework>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Authors>Mohammad ShafieZadeh, Amir Savari</Authors>
@@ -17,12 +17,19 @@
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-            <_Parameter1>EasyPipe.Extensions.MicrosoftDependencyInjection</_Parameter1>
+            <_Parameter1>EasyPipe.Extensions.DependencyInjection</_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>EasyPipe.Tests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
 
     <ItemGroup>
         <None Include="..\..\assets\logo\logo.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />
     </ItemGroup>
 
 </Project>

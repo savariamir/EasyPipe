@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Amir Savari, Mohammad ShafieZadeh</Authors>
+        <Title>EasyPipe</Title>
+        <Description>Extension methods to integerate EasyPipe with Microsoft dependency injection</Description>
+        <PackageProjectUrl>https://github.com/savariamir/EasyPipe</PackageProjectUrl>
+        <PackageIcon>logo.png</PackageIcon>
+        <RepositoryUrl>https://github.com/savariamir/EasyPipe</RepositoryUrl>
+        <PackageTags>pipeline</PackageTags>
+        <Version>0.4.0</Version>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\EasyPipe\EasyPipe.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\..\assets\logo\logo.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+</Project>
