@@ -2,7 +2,7 @@ using System.Diagnostics;
 using EasyPipe.Abstractions;
 using EasyPipe.Extensions.DependencyInjection;
 using EasyPipe.Tests.Steps;
-using FluentAssertions;
+using AwesomeAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyPipe.Tests;
