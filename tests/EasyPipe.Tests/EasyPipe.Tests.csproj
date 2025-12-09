@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\EasyPipe.Extensions.MicrosoftDependencyInjection\EasyPipe.Extensions.MicrosoftDependencyInjection.csproj" />
+      <ProjectReference Include="..\..\src\EasyPipe.Extensions.DependencyInjection\EasyPipe.Extensions.DependencyInjection.csproj" />
       <ProjectReference Include="..\..\src\EasyPipe\EasyPipe.csproj" />
     </ItemGroup>
 

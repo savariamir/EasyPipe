@@ -1,4 +1,4 @@
-using EasyPipe.V2;
+using EasyPipe.Abstractions;
 
 namespace EasyPipe.Tests.Steps;
 

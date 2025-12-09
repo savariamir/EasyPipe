@@ -1,6 +1,6 @@
-using EasyPipe.Extensions.MicrosoftDependencyInjection.V2;
+using EasyPipe.Abstractions;
+using EasyPipe.Extensions.DependencyInjection;
 using EasyPipe.Tests.Steps;
-using EasyPipe.V2;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -26,11 +26,11 @@ public class PipelineExecutionTests : IDisposable
     public async Task ExecuteAsync_WithMultipleSteps_ShouldExecuteInOrder()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<FirstStep>()
-            .AddStep<SecondStep>()
-            .AddStep<ThirdStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+            pipeline.AddStep<Step1>()
+                .AddStep<Step2>()
+                .AddStep<Step3>());
+
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -48,9 +48,12 @@ public class PipelineExecutionTests : IDisposable
     public async Task ExecuteAsync_ShouldPassContextThroughSteps()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<ContextModifyingStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<ContextModifyingStep>();
+        });
+
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -63,16 +66,16 @@ public class PipelineExecutionTests : IDisposable
         context.Value.Should().Be("modified");
     }
 
-    /// <summary>
-    /// TEST: Pipeline should return result from final step
-    /// </summary>
+
     [Fact]
     public async Task ExecuteAsync_ShouldReturnResultFromFinalStep()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<ResultStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<ResultStep>();
+        });
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -92,9 +95,11 @@ public class PipelineExecutionTests : IDisposable
     public async Task ExecuteAsync_WhenStepThrows_ShouldPropagateException()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<ThrowingStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<ThrowingStep>();
+        });
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -111,11 +116,10 @@ public class PipelineExecutionTests : IDisposable
     public async Task ExecuteAsync_WhenMiddleStepThrows_ShouldNotExecuteRemainingSteps()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<FirstStep>()
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline => pipeline
+            .AddStep<Step1>()
             .AddStep<ThrowingStep>()
-            .AddStep<ThirdStep>()
-            .Build();
+            .AddStep<Step3>());
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -129,18 +133,14 @@ public class PipelineExecutionTests : IDisposable
         context.ExecutedSteps.Should().Equal("Step1");
     }
 
-    /// <summary>
-    /// TEST: Pipeline should short-circuit when step doesn't call next
-    /// </summary>
     [Fact]
     public async Task ExecuteAsync_WhenStepDoesNotCallNext_ShouldShortCircuit()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<FirstStep>()
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline => pipeline
+            .AddStep<Step1>()
             .AddStep<ShortCircuitStep>()
-            .AddStep<ThirdStep>()
-            .Build();
+            .AddStep<Step3>());
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -159,9 +159,8 @@ public class PipelineExecutionTests : IDisposable
     public async Task ExecuteAsync_WhenCancelled_ShouldThrowOperationCanceledException()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<CancellationAwareStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline => pipeline
+            .AddStep<CancellationAwareStep>());
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -179,9 +178,8 @@ public class PipelineExecutionTests : IDisposable
     public async Task ExecuteAsync_ShouldPassCancellationTokenToSteps()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<CancellationTokenCapturingStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline => pipeline
+            .AddStep<CancellationTokenCapturingStep>());
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -203,9 +201,11 @@ public class PipelineExecutionTests : IDisposable
         // Arrange
         var diagnosticsMock = new Mock<IPipelineDiagnostics>();
         _fixture.Services.AddSingleton(diagnosticsMock.Object);
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<FirstStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<Step1>();
+        });
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -214,9 +214,9 @@ public class PipelineExecutionTests : IDisposable
         await pipeline.ExecuteAsync(new TestContext());
 
         // Assert
-        diagnosticsMock.Verify(d => d.OnStepStarting(typeof(FirstStep), 0), Times.Once);
+        diagnosticsMock.Verify(d => d.OnStepStarting(typeof(Step1), 0), Times.Once);
         diagnosticsMock.Verify(d => d.OnStepCompleted(
-            typeof(FirstStep), 0, It.Is<TimeSpan>(ts => ts.TotalMilliseconds >= 0)), Times.Once);
+            typeof(Step1), 0, It.Is<TimeSpan>(ts => ts.TotalMilliseconds >= 0)), Times.Once);
         diagnosticsMock.Verify(d => d.OnPipelineCompleted(
             It.Is<TimeSpan>(ts => ts.TotalMilliseconds >= 0), true), Times.Once);
     }
@@ -227,9 +227,11 @@ public class PipelineExecutionTests : IDisposable
         // Arrange
         var diagnosticsMock = new Mock<IPipelineDiagnostics>();
         _fixture.Services.AddSingleton(diagnosticsMock.Object);
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<ThrowingStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<ThrowingStep>();
+        });
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
@@ -240,6 +242,6 @@ public class PipelineExecutionTests : IDisposable
             .ThrowAsync<InvalidOperationException>();
 
         diagnosticsMock.Verify(d => d.OnPipelineCompleted(
-            It.IsAny<TimeSpan>(), false), Times.Once); // false = failed
+            It.IsAny<TimeSpan>(), false), Times.Once);
     }
 }

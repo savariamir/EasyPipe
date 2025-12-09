@@ -1,20 +1,20 @@
+using EasyPipe.Abstractions;
 using EasyPipe.Tests.Services;
-using EasyPipe.V2;
 
 namespace EasyPipe.Tests.Steps;
 
 public class VoidShortCircuitStep : IPipelineStep<TestContext, Unit>
 {
-    private readonly CallTracker _tracker;
+    private readonly ITestLogger _logger;
 
-    public VoidShortCircuitStep(CallTracker tracker) => _tracker = tracker;
+    public VoidShortCircuitStep(ITestLogger logger) => _logger = logger;
 
     public Task<Unit> RunAsync(
         TestContext context,
         PipeDelegate<TestContext, Unit> next,
         CancellationToken ct = default)
     {
-        _tracker.RecordCall("VoidShortCircuit");
+        _logger.Log("VoidShortCircuit");
         return Task.FromResult(Unit.Value); // Don't call next
     }
 }

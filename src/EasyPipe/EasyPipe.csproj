@@ -17,7 +17,10 @@
 
     <ItemGroup>
         <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-            <_Parameter1>EasyPipe.Extensions.MicrosoftDependencyInjection</_Parameter1>
+            <_Parameter1>EasyPipe.Extensions.DependencyInjection</_Parameter1>
+        </AssemblyAttribute>
+        <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+            <_Parameter1>EasyPipe.Tests</_Parameter1>
         </AssemblyAttribute>
     </ItemGroup>
 

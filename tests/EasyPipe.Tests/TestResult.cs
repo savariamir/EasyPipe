@@ -6,6 +6,5 @@ namespace EasyPipe.Tests;
 public class TestResult
 {
     public string ResultValue { get; set; } = "";
-    public List<string> StepTrace { get; set; } = [];
     public bool Success { get; set; }
 }

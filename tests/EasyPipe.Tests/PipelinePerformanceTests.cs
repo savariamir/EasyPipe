@@ -1,7 +1,7 @@
 using System.Diagnostics;
-using EasyPipe.Extensions.MicrosoftDependencyInjection.V2;
+using EasyPipe.Abstractions;
+using EasyPipe.Extensions.DependencyInjection;
 using EasyPipe.Tests.Steps;
-using EasyPipe.V2;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -25,12 +25,10 @@ public class PipelinePerformanceTests : IDisposable
     public async Task ExecuteAsync_ShouldCompleteInReasonableTime()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<FirstStep>()
-            .AddStep<SecondStep>()
-            .AddStep<ThirdStep>()
-            .Build();
-
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline => pipeline
+            .AddStep<Step1>()
+            .AddStep<Step2>()
+            .AddStep<Step3>());
         _fixture.BuildServiceProvider();
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
@@ -55,9 +53,11 @@ public class PipelinePerformanceTests : IDisposable
     public async Task ExecuteAsync_WithHighConcurrency_ShouldHandleLoad()
     {
         // Arrange
-        _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<ResultStep>()
-            .Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<ResultStep>();
+        });
 
         _fixture.BuildServiceProvider();
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, TestResult>>();

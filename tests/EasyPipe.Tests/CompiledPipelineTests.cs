@@ -1,5 +1,5 @@
+using EasyPipe.Internal;
 using EasyPipe.Tests.Steps;
-using EasyPipe.V2;
 using FluentAssertions;
 
 namespace EasyPipe.Tests;
@@ -35,7 +35,7 @@ public class CompiledPipelineTests
     public void Constructor_WithDuplicateSteps_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var stepType = typeof(FirstStep);
+        var stepType = typeof(Step1);
         var steps = new[] { stepType, stepType }; // Same step registered twice
 
         // Act
@@ -52,7 +52,7 @@ public class CompiledPipelineTests
     public void Constructor_ShouldStoreSteps()
     {
         // Arrange
-        var steps = new[] { typeof(FirstStep), typeof(SecondStep) };
+        var steps = new[] { typeof(Step1), typeof(Step2) };
 
         // Act
         var compiled = new CompiledPipeline<TestContext, TestResult>(steps);

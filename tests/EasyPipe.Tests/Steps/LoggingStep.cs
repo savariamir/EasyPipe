@@ -1,5 +1,5 @@
+using EasyPipe.Abstractions;
 using EasyPipe.Tests.Services;
-using EasyPipe.V2;
 
 namespace EasyPipe.Tests.Steps;
 

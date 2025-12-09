@@ -1,20 +1,20 @@
+using EasyPipe.Abstractions;
 using EasyPipe.Tests.Services;
-using EasyPipe.V2;
 
 namespace EasyPipe.Tests.Steps;
 
 public class VoidStep1 : IPipelineStep<TestContext, Unit>
 {
-    private readonly CallTracker _tracker;
+    private readonly ITestLogger _logger;
 
-    public VoidStep1(CallTracker tracker) => _tracker = tracker;
+    public VoidStep1(ITestLogger logger) => _logger = logger;
 
     public async Task<Unit> RunAsync(
         TestContext context,
         PipeDelegate<TestContext, Unit> next,
         CancellationToken ct = default)
     {
-        _tracker.RecordCall("VoidStep1");
+        _logger.Log("VoidStep1");
         return await next(context, ct);
     }
 }

@@ -1,7 +1,7 @@
-using EasyPipe.Extensions.MicrosoftDependencyInjection.V2;
+using EasyPipe.Abstractions;
+using EasyPipe.Extensions.DependencyInjection;
 using EasyPipe.Tests.Services;
 using EasyPipe.Tests.Steps;
-using EasyPipe.V2;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,19 +21,18 @@ public class VoidPipelineTests : IDisposable
         (_fixture.Provider as ServiceProvider)?.Dispose();
     }
 
-    /// <summary>
-    /// TEST: Void pipeline should execute steps
-    /// </summary>
     [Fact]
     public async Task ExecuteAsync_VoidPipeline_ShouldExecuteAllSteps()
     {
         // Arrange
-        var callOrder = new List<string>();
-        _fixture.Services.AddScoped<CallTracker>(_ => new CallTracker(callOrder));
-        _fixture.Services.AddPipeline<TestContext, Unit>()
-            .AddStep<VoidStep1>()
-            .AddStep<VoidStep2>()
-            .Build();
+        var logs = new List<string>();
+        _fixture.Services.AddScoped<ITestLogger>(_ => new TestLogger(logs));
+        _fixture.Services.AddPipeline<TestContext, Unit>(pipeline =>
+        {
+            pipeline
+                .AddStep<VoidStep1>()
+                .AddStep<VoidStep2>();
+        });
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, Unit>>();
@@ -43,24 +42,23 @@ public class VoidPipelineTests : IDisposable
 
         // Assert
         result.Should().Be(Unit.Value);
-        callOrder.Should().Equal("VoidStep1", "VoidStep2");
+        logs.Should().Equal("VoidStep1", "VoidStep2");
     }
 
-    /// <summary>
-    /// TEST: Void pipeline should support short-circuiting
-    /// </summary>
     [Fact]
     public async Task ExecuteAsync_VoidPipeline_WhenShortCircuited_ShouldNotExecuteRemaining()
     {
         // Arrange
-        var callOrder = new List<string>();
+        var logs = new List<string>();
 
-        _fixture.Services.AddScoped<CallTracker>(_ => new CallTracker(callOrder));
-        _fixture.Services.AddPipeline<TestContext, Unit>()
-            .AddStep<VoidStep1>()
-            .AddStep<VoidShortCircuitStep>()
-            .AddStep<VoidStep2>()
-            .Build();
+        _fixture.Services.AddScoped<ITestLogger>(_ => new TestLogger(logs));
+        _fixture.Services.AddPipeline<TestContext, Unit>(pipeline =>
+        {
+            pipeline
+                .AddStep<VoidStep1>()
+                .AddStep<VoidShortCircuitStep>()
+                .AddStep<VoidStep2>();
+        });
         _fixture.BuildServiceProvider();
 
         var pipeline = _fixture.Provider.GetRequiredService<IPipeline<TestContext, Unit>>();
@@ -70,6 +68,6 @@ public class VoidPipelineTests : IDisposable
 
         // Assert
         result.Should().Be(Unit.Value);
-        callOrder.Should().Equal("VoidStep1", "VoidShortCircuit");
+        logs.Should().Equal("VoidStep1", "VoidShortCircuit");
     }
 }

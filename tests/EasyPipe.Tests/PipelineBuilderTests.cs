@@ -1,6 +1,7 @@
-using EasyPipe.Extensions.MicrosoftDependencyInjection.V2;
+using EasyPipe.Abstractions;
+using EasyPipe.Extensions.DependencyInjection;
+using EasyPipe.Internal;
 using EasyPipe.Tests.Steps;
-using EasyPipe.V2;
 using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,15 +21,16 @@ public class PipelineBuilderTests : IDisposable
         (_fixture.Provider as ServiceProvider)?.Dispose();
     }
 
-    /// <summary>
-    /// TEST: Builder should successfully add a single step
-    /// </summary>
+
     [Fact]
     public void AddStep_WithValidStep_ShouldAddStepType()
     {
         // Arrange & Act
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>();
-        builder.AddStep<FirstStep>().Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<Step1>();
+        });
 
         // Assert
         var compiled = _fixture.Services
@@ -36,20 +38,20 @@ public class PipelineBuilderTests : IDisposable
             .GetRequiredService<CompiledPipeline<TestContext, TestResult>>();
 
         compiled.Steps.Should().HaveCount(1);
-        compiled.Steps[0].Should().Be(typeof(FirstStep));
+        compiled.Steps[0].Should().Be(typeof(Step1));
     }
 
-    /// <summary>
-    /// TEST: Builder should add multiple steps in order
-    /// </summary>
     [Fact]
     public void AddStep_WithMultipleSteps_ShouldMaintainOrder()
     {
         // Arrange & Act
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>()
-            .AddStep<FirstStep>()
-            .AddStep<SecondStep>()
-            .AddStep<ThirdStep>().Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<Step1>()
+                .AddStep<Step2>()
+                .AddStep<Step3>();
+        });
 
         // Assert
         var compiled = _fixture.Services
@@ -57,41 +59,47 @@ public class PipelineBuilderTests : IDisposable
             .GetRequiredService<CompiledPipeline<TestContext, TestResult>>();
 
         compiled.Steps.Should().HaveCount(3);
-        compiled.Steps[0].Should().Be(typeof(FirstStep));
-        compiled.Steps[1].Should().Be(typeof(SecondStep));
-        compiled.Steps[2].Should().Be(typeof(ThirdStep));
+        compiled.Steps[0].Should().Be(typeof(Step1));
+        compiled.Steps[1].Should().Be(typeof(Step2));
+        compiled.Steps[2].Should().Be(typeof(Step3));
     }
 
-    /// <summary>
-    /// TEST: Builder.Build() should return IServiceCollection for chaining
-    /// </summary>
+
     [Fact]
     public void Build_ShouldReturnServiceCollection()
     {
-        // Arrange
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>();
-        builder.AddStep<FirstStep>();
-
-        // Act
-        var result = builder.Build();
+        // Arrange & Act
+        var services = _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline.AddStep<Step1>();
+        });
 
         // Assert
-        result.Should().BeEquivalentTo(_fixture.Services);
+        services.Should().BeEquivalentTo(_fixture.Services);
     }
 
-    /// <summary>
-    /// TEST: Build should throw when no steps are registered
-    /// </summary>
+    [Fact]
+    public void AddPipeline_WithNullServices_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        IServiceCollection? services = null;
+
+        // Act & Assert
+        Action act = () => services!.AddPipeline<TestContext, TestResult>((_) => { });
+
+        act.Should()
+            .Throw<ArgumentNullException>();
+    }
+
+
     [Fact]
     public void Build_WithNoSteps_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>();
+        Action act = () => _fixture.Services.AddPipeline<TestContext, TestResult>(_ => { });
 
         // Act & Assert
-        builder.Invoking(b => b.Build())
-            .Should()
-            .Throw<InvalidOperationException>()
+        act.Should().Throw<InvalidOperationException>()
             .WithMessage("*must have at least one step*");
     }
 
@@ -102,9 +110,11 @@ public class PipelineBuilderTests : IDisposable
     public void Build_ShouldRegisterStepsAsScoped()
     {
         // Arrange
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>();
-        builder.AddStep<FirstStep>();
-        builder.Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<Step1>();
+        });
 
         // Act
         _fixture.BuildServiceProvider();
@@ -113,22 +123,19 @@ public class PipelineBuilderTests : IDisposable
         using var scope1 = _fixture.Provider.CreateScope();
         using var scope2 = _fixture.Provider.CreateScope();
 
-        var instance1 = scope1.ServiceProvider.GetRequiredService<FirstStep>();
-        var instance2 = scope2.ServiceProvider.GetRequiredService<FirstStep>();
+        var instance1 = scope1.ServiceProvider.GetRequiredService<Step1>();
+        var instance2 = scope2.ServiceProvider.GetRequiredService<Step1>();
 
-        instance1.Should().NotBeSameAs(instance2); // Different scopes = different instances
+        instance1.Should().NotBeSameAs(instance2);
     }
 
-    /// <summary>
-    /// TEST: CompiledPipeline should be singleton
-    /// </summary>
+
     [Fact]
     public void Build_ShouldRegisterCompiledPipelineAsSingleton()
     {
         // Arrange
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>();
-        builder.AddStep<FirstStep>();
-        builder.Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline => pipeline
+            .AddStep<Step1>());
         _fixture.BuildServiceProvider();
 
         // Act
@@ -139,16 +146,16 @@ public class PipelineBuilderTests : IDisposable
         compiled1.Should().BeSameAs(compiled2);
     }
 
-    /// <summary>
-    /// TEST: Build should register IPipeline interface
-    /// </summary>
+
     [Fact]
     public void Build_ShouldRegisterIPipelineInterface()
     {
         // Arrange
-        var builder = _fixture.Services.AddPipeline<TestContext, TestResult>();
-        builder.AddStep<FirstStep>();
-        builder.Build();
+        _fixture.Services.AddPipeline<TestContext, TestResult>(pipeline =>
+        {
+            pipeline
+                .AddStep<Step1>();
+        });
         _fixture.BuildServiceProvider();
 
         // Act
