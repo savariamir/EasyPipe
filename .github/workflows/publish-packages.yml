@@ -1,33 +1,42 @@
 name: Publish Packages
-
 on:
   push:
     branches: [ main ]
-
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v1
+        uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 5.0.x
-
+          dotnet-version: 9.0.x
       - name: Install Dependencies
         run: dotnet restore
-        
       - name: Build
         run: dotnet build --configuration Release --no-restore
+      - name: Run Tests
+        run: dotnet test --configuration Release --no-build --verbosity normal
 
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+      - name: Install Dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
       - name: Publish EasyPipe
         uses: brandedoutcast/publish-nuget@v2.5.5
         with:
           PROJECT_FILE_PATH: src/EasyPipe/EasyPipe.csproj
           NUGET_KEY: ${{secrets.Nuget_API_Key}}
           NUGET_SOURCE: https://api.nuget.org
-
       - name: Publish EasyPipe.Extensions.MicrosoftDependencyInjection
         uses: brandedoutcast/publish-nuget@v2.5.5
         with:
