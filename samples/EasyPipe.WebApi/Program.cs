@@ -14,7 +14,8 @@ builder.Services.AddPipeline<PipelineContext, PipelineResponse>(pipeline =>
     pipeline
         .AddStep<Pipeline1>()
         .AddStep<Pipeline2>()
-        .AddStep<Pipeline3>();
+        .AddStep<Pipeline3>()
+        .WithDiagnostics<SimpleDiagnostics>();
 });
 
 builder.Services.AddPipeline<ArticleRequest, ArticleResponse>(pipeline =>

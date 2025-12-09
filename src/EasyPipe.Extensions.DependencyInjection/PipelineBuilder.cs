@@ -1,5 +1,5 @@
-using System;
-using System.Collections.Generic;
+// File: src/EasyPipe.Extensions.DependencyInjection/PipelineBuilder.cs
+
 using EasyPipe.Abstractions;
 using EasyPipe.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +17,7 @@ namespace EasyPipe.Extensions.DependencyInjection;
 ///     .AddStep&lt;ValidationStep&gt;()
 ///     .AddStep&lt;ProcessingStep&gt;()
 ///     .AddStep&lt;ResultStep&gt;()
+///     .WithDiagnostics&lt;PerformanceMonitoringDiagnostics&gt;()
 ///     .Build();
 /// </code>
 /// </summary>
@@ -24,11 +25,13 @@ public class PipelineBuilder<TContext, TResult>
 {
     private readonly List<Type> _stepTypes;
     private readonly IServiceCollection _services;
+    private Type? _diagnosticsType;
 
     public PipelineBuilder(IServiceCollection services)
     {
         _services = services;
-        _stepTypes= new List<Type>();
+        _stepTypes = new List<Type>();
+        _diagnosticsType = null;
     }
 
     /// <summary>
@@ -45,11 +48,42 @@ public class PipelineBuilder<TContext, TResult>
     }
 
     /// <summary>
+    /// Registers custom diagnostics for pipeline execution monitoring.
+    /// </summary>
+    /// <typeparam name="TDiagnostics">The diagnostics implementation type</typeparam>
+    /// <returns>This builder for fluent chaining</returns>
+    /// <exception cref="InvalidOperationException">If diagnostics type doesn't implement IPipelineDiagnostics</exception>
+    public PipelineBuilder<TContext, TResult> WithDiagnostics<TDiagnostics>() where TDiagnostics : class, IPipelineDiagnostics
+    {
+        if (!typeof(IPipelineDiagnostics).IsAssignableFrom(typeof(TDiagnostics)))
+        {
+            throw new InvalidOperationException(
+                $"Diagnostics type '{typeof(TDiagnostics).Name}' must implement IPipelineDiagnostics");
+        }
+
+        _diagnosticsType = typeof(TDiagnostics);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers a diagnostics instance directly.
+    /// Useful for simple cases where the diagnostics doesn't need dependency injection.
+    /// </summary>
+    /// <param name="diagnostics">The diagnostics instance</param>
+    /// <returns>This builder for fluent chaining</returns>
+    public PipelineBuilder<TContext, TResult> WithDiagnostics(IPipelineDiagnostics diagnostics)
+    {
+        ArgumentNullException.ThrowIfNull(diagnostics);
+        _services.AddSingleton(diagnostics);
+        return this;
+    }
+
+    /// <summary>
     /// Builds the pipeline and registers it in the DI container.
     /// </summary>
     /// <returns>The service collection for chaining</returns>
     /// <exception cref="InvalidOperationException">If no steps are registered</exception>
-    public IServiceCollection Build()
+    internal IServiceCollection Build()
     {
         if (_stepTypes.Count == 0)
         {
@@ -69,9 +103,16 @@ public class PipelineBuilder<TContext, TResult>
         }
 
         _services.AddSingleton(new CompiledPipeline<TContext, TResult>(_stepTypes.ToArray()));
-        
-        _services.TryAddSingleton<IPipelineDiagnostics, NullPipelineDiagnostics>();
-        
+
+        if (_diagnosticsType != null)
+        {
+            _services.AddScoped(typeof(IPipelineDiagnostics), _diagnosticsType);
+        }
+        else
+        {
+            _services.TryAddSingleton<IPipelineDiagnostics, NullPipelineDiagnostics>();
+        }
+
         _services.AddScoped<IPipeline<TContext, TResult>, Pipeline<TContext, TResult>>();
 
         return _services;

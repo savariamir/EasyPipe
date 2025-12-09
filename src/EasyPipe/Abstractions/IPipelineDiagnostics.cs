@@ -1,5 +1,3 @@
-using System;
-
 namespace EasyPipe.Abstractions;
 
 /// <summary>
