@@ -1,6 +1,6 @@
 using EasyPipe.Internal;
 using EasyPipe.Tests.Steps;
-using FluentAssertions;
+using AwesomeAssertions;
 
 namespace EasyPipe.Tests;
 

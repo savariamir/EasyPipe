@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Add built-in OpenAPI support
 builder.Services.AddOpenApi();
-builder.Services.AddOpenApiDocument();
 
 builder.Services.AddPipeline<PipelineContext, PipelineResponse>(pipeline =>
 {
@@ -18,7 +16,6 @@ builder.Services.AddPipeline<PipelineContext, PipelineResponse>(pipeline =>
         .AddStep<Pipeline2>()
         .AddStep<Pipeline3>();
 });
-
 
 builder.Services.AddPipeline<ArticleRequest, ArticleResponse>(pipeline =>
 {
@@ -30,11 +27,9 @@ builder.Services.AddPipeline<ArticleRequest, ArticleResponse>(pipeline =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerUi();
-    app.UseOpenApi();
+    app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
@@ -42,16 +37,13 @@ app.UseHttpsRedirection();
 app.MapGet("/example1", async ([FromServices] IPipeline<PipelineContext, PipelineResponse> pipeline) =>
     {
         var result = await pipeline.ExecuteAsync(new PipelineContext());
-
         return result;
     })
     .WithName("example1");
 
-
 app.MapGet("/example2", async ([FromServices] IPipeline<ArticleRequest, ArticleResponse> pipeline) =>
     {
         var result = await pipeline.ExecuteAsync(new ArticleRequest());
-
         return result;
     })
     .WithName("example2");

@@ -20,9 +20,16 @@ namespace EasyPipe.Extensions.DependencyInjection;
 ///     .Build();
 /// </code>
 /// </summary>
-public class PipelineBuilder<TContext, TResult>(IServiceCollection services)
+public class PipelineBuilder<TContext, TResult>
 {
-    private readonly List<Type> _stepTypes = [];
+    private readonly List<Type> _stepTypes;
+    private readonly IServiceCollection _services;
+
+    public PipelineBuilder(IServiceCollection services)
+    {
+        _services = services;
+        _stepTypes= new List<Type>();
+    }
 
     /// <summary>
     /// Registers a step in the pipeline.
@@ -58,15 +65,15 @@ public class PipelineBuilder<TContext, TResult>(IServiceCollection services)
                     $"Step type '{stepType.Name}' must implement IPipelineStep<{typeof(TContext).Name}, {typeof(TResult).Name}>");
             }
 
-            services.AddScoped(stepType);
+            _services.AddScoped(stepType);
         }
 
-        services.AddSingleton(new CompiledPipeline<TContext, TResult>(_stepTypes.ToArray()));
+        _services.AddSingleton(new CompiledPipeline<TContext, TResult>(_stepTypes.ToArray()));
         
-        services.TryAddSingleton<IPipelineDiagnostics, NullPipelineDiagnostics>();
+        _services.TryAddSingleton<IPipelineDiagnostics, NullPipelineDiagnostics>();
         
-        services.AddScoped<IPipeline<TContext, TResult>, Pipeline<TContext, TResult>>();
+        _services.AddScoped<IPipeline<TContext, TResult>, Pipeline<TContext, TResult>>();
 
-        return services;
+        return _services;
     }
 }
