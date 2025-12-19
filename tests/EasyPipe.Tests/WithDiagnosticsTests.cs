@@ -2,62 +2,16 @@ using AwesomeAssertions;
 using EasyPipe.Abstractions;
 using EasyPipe.Extensions.DependencyInjection;
 using EasyPipe.Internal;
+using EasyPipe.Tests.Steps;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace EasyPipe.Tests;
 
 public class WithDiagnosticsTests
 {
-    private class TestContext
-    {
-        public int Value { get; set; }
-    }
-
-    private class TestResponse
-    {
-        public int Result { get; set; }
-    }
-    
-    private class Step1 : IPipelineStep<TestContext, TestResponse>
-    {
-        public async Task<TestResponse> RunAsync(
-            TestContext context,
-            PipeDelegate<TestContext, TestResponse> next,
-            CancellationToken ct = default)
-        {
-            context.Value += 10;
-            await Task.Delay(10, ct);
-            return await next(context, ct);
-        }
-    }
-
-    private class Step2 : IPipelineStep<TestContext, TestResponse>
-    {
-        public async Task<TestResponse> RunAsync(
-            TestContext context,
-            PipeDelegate<TestContext, TestResponse> next,
-            CancellationToken ct = default)
-        {
-            context.Value += 20;
-            return await next(context, ct);
-        }
-    }
-
-    private class FinalStep : IPipelineStep<TestContext, TestResponse>
-    {
-        public Task<TestResponse> RunAsync(
-            TestContext context,
-            PipeDelegate<TestContext, TestResponse> next,
-            CancellationToken ct = default)
-        {
-            return Task.FromResult(new TestResponse { Result = context.Value });
-        }
-    }
-
-    // Test diagnostics implementations
     private class TestDiagnostics : IPipelineDiagnostics
     {
-        public List<string> Events { get; } = new();
+        public List<string> Events { get; } = [];
 
         public void OnStepStarting(Type stepType, int stepIndex)
         {
@@ -82,18 +36,18 @@ public class WithDiagnosticsTests
 
     private class DependencyInjectedDiagnostics : IPipelineDiagnostics
     {
-        public readonly TestDependency _dependency;
-        public List<string> Events { get; } = new();
+        public readonly TestDependency Dependency;
+        private List<string> Events { get; } = [];
 
         public DependencyInjectedDiagnostics(TestDependency dependency)
         {
-            _dependency = dependency ?? throw new ArgumentNullException(nameof(dependency));
+            Dependency = dependency ?? throw new ArgumentNullException(nameof(dependency));
         }
 
         public void OnStepStarting(Type stepType, int stepIndex)
         {
             Events.Add($"starting_{stepIndex}");
-            _dependency.CallCount++;
+            Dependency.CallCount++;
         }
 
         public void OnStepCompleted(Type stepType, int stepIndex, TimeSpan duration)
@@ -118,18 +72,17 @@ public class WithDiagnosticsTests
     }
 
     [Fact]
-    public async Task WithDiagnostics_TypeBased_RegistersDiagnosticsInContainer()
+    public void WithDiagnostics_TypeBased_RegistersDiagnosticsInContainer()
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
                 .AddStep<Step2>()
                 .AddStep<FinalStep>()
-                .WithDiagnostics<TestDiagnostics>()
-                ;
+                .WithDiagnostics<TestDiagnostics>();
         });
 
         var provider = services.BuildServiceProvider();
@@ -145,12 +98,12 @@ public class WithDiagnosticsTests
     }
 
     [Fact]
-    public async Task WithDiagnostics_InstanceBased_RegistersDiagnosticsInContainer()
+    public void WithDiagnostics_InstanceBased_RegistersDiagnosticsInContainer()
     {
         // Arrange
         var diagnosticsInstance = new TestDiagnostics();
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
@@ -176,7 +129,7 @@ public class WithDiagnosticsTests
         // Arrange
         var diagnostics = new TestDiagnostics();
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
@@ -186,20 +139,19 @@ public class WithDiagnosticsTests
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
+        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
         // Act
-        var result = await pipeline.ExecuteAsync(new TestContext { Value = 0 });
+        var result = await pipeline.ExecuteAsync(new TestContext { Counter = 0 });
 
         // Assert
-        result.Result
+        result.ResultCounter
             .Should()
             .Be(30);
 
         diagnostics.Events
             .Should()
-            .Contain(new[]
-            {
+            .Contain([
                 "starting_0_Step1",
                 "completed_0_Step1",
                 "starting_1_Step2",
@@ -207,7 +159,7 @@ public class WithDiagnosticsTests
                 "starting_2_FinalStep",
                 "completed_2_FinalStep",
                 "pipeline_completed_True"
-            });
+            ]);
     }
 
     [Fact]
@@ -216,7 +168,7 @@ public class WithDiagnosticsTests
         // Arrange
         var diagnostics = new TestDiagnostics();
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
@@ -225,7 +177,7 @@ public class WithDiagnosticsTests
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
+        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
         // Act
         await pipeline.ExecuteAsync(new TestContext());
@@ -244,29 +196,28 @@ public class WithDiagnosticsTests
         var diagnostics = new TestDiagnostics();
 
         var services = new ServiceCollection();
-        services.AddScoped<FailingStep>();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddScoped<ThrowingStep>();
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
-                .AddStep<FailingStep>()
-                .WithDiagnostics(diagnostics)
-                ;
+                .AddStep<ThrowingStep>()
+                .WithDiagnostics(diagnostics);
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
+        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
         // Act & Assert
         await pipeline
             .Invoking(p => p.ExecuteAsync(new TestContext()))
             .Should()
             .ThrowAsync<InvalidOperationException>()
-            .WithMessage("Step failed intentionally");
+            .WithMessage("Step failed");
 
         diagnostics.Events
             .Should()
-            .Contain("failed_1_FailingStep_InvalidOperationException")
+            .Contain("failed_1_ThrowingStep_InvalidOperationException")
             .And.Contain("pipeline_completed_False");
     }
 
@@ -276,18 +227,17 @@ public class WithDiagnosticsTests
         // Arrange
         var services = new ServiceCollection();
         services.AddScoped<TestDependency>();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
                 .AddStep<Step2>()
                 .AddStep<FinalStep>()
-                .WithDiagnostics<DependencyInjectedDiagnostics>()
-                ;
+                .WithDiagnostics<DependencyInjectedDiagnostics>();
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
+        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
         // Act
         await pipeline.ExecuteAsync(new TestContext());
@@ -299,7 +249,7 @@ public class WithDiagnosticsTests
             .BeOfType<DependencyInjectedDiagnostics>();
 
         var injectedDiagnostics = (DependencyInjectedDiagnostics)diagnostics;
-        injectedDiagnostics._dependency.CallCount
+        injectedDiagnostics.Dependency.CallCount
             .Should()
             .BeGreaterThan(0);
     }
@@ -312,29 +262,27 @@ public class WithDiagnosticsTests
 
         // Act & Assert
         services
-            .Invoking(s => s.AddPipeline<TestContext, TestResponse>(pipeline =>
+            .Invoking(s => s.AddPipeline<TestContext, TestResult>(pipeline =>
             {
                 pipeline
                     .AddStep<Step1>()
                     .AddStep<FinalStep>()
-                    .WithDiagnostics(null!)
-                    ;
+                    .WithDiagnostics(null!);
             }))
             .Should()
             .Throw<ArgumentNullException>();
     }
 
     [Fact]
-    public async Task WithDiagnostics_NotRegistered_UsesNullDiagnostics()
+    public void WithDiagnostics_NotRegistered_UsesNullDiagnostics()
     {
         // Arrange
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
-                .AddStep<FinalStep>()
-                ;
+                .AddStep<FinalStep>();
         });
 
         var provider = services.BuildServiceProvider();
@@ -354,7 +302,7 @@ public class WithDiagnosticsTests
         // Arrange
         var diagnostics = new TestDiagnostics();
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
@@ -365,7 +313,7 @@ public class WithDiagnosticsTests
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
+        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
         // Act
         await pipeline.ExecuteAsync(new TestContext());
@@ -391,7 +339,7 @@ public class WithDiagnosticsTests
         // Arrange
         var diagnostics = new TestDiagnostics();
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
@@ -402,8 +350,8 @@ public class WithDiagnosticsTests
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
-        var context = new TestContext { Value = 5 };
+        var pipeline = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
+        var context = new TestContext { Counter = 5 };
 
         // Act
         var result = await pipeline.ExecuteAsync(context);
@@ -412,9 +360,9 @@ public class WithDiagnosticsTests
         result
             .Should()
             .NotBeNull()
-            .And.BeOfType<TestResponse>();
+            .And.BeOfType<TestResult>();
 
-        result.Result
+        result.ResultCounter
             .Should()
             .Be(35, "5 + 10 (Step1) + 20 (Step2) = 35");
 
@@ -433,17 +381,16 @@ public class WithDiagnosticsTests
         var diagnostics2 = new TestDiagnostics();
 
         var services = new ServiceCollection();
-        services.AddPipeline<TestContext, TestResponse>(pipeline =>
+        services.AddPipeline<TestContext, TestResult>(pipeline =>
         {
             pipeline
                 .AddStep<Step1>()
                 .AddStep<FinalStep>()
-                .WithDiagnostics(diagnostics1)
-                ;
+                .WithDiagnostics(diagnostics1);
         });
 
         var provider = services.BuildServiceProvider();
-        var pipeline1 = provider.GetRequiredService<IPipeline<TestContext, TestResponse>>();
+        var pipeline1 = provider.GetRequiredService<IPipeline<TestContext, TestResult>>();
 
         // Act
         await pipeline1.ExecuteAsync(new TestContext());
@@ -456,17 +403,5 @@ public class WithDiagnosticsTests
         diagnostics2.Events
             .Should()
             .BeEmpty("diagnostics2 was never registered or used");
-    }
-
-    // Failing step for testing exception handling
-    private class FailingStep : IPipelineStep<TestContext, TestResponse>
-    {
-        public Task<TestResponse> RunAsync(
-            TestContext context,
-            PipeDelegate<TestContext, TestResponse> next,
-            CancellationToken ct = default)
-        {
-            throw new InvalidOperationException("Step failed intentionally");
-        }
     }
 }

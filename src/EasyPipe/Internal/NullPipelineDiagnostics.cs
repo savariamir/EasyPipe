@@ -1,4 +1,3 @@
-using System;
 using EasyPipe.Abstractions;
 
 namespace EasyPipe.Internal;

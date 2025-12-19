@@ -6,5 +6,6 @@ namespace EasyPipe.Tests;
 public class TestResult
 {
     public string ResultValue { get; set; } = "";
+    public int ResultCounter { get; set; }
     public bool Success { get; set; }
 }

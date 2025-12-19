@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-
 namespace EasyPipe.Internal;
 
 internal sealed class CompiledPipeline<TContext, TResult>
@@ -12,6 +9,13 @@ internal sealed class CompiledPipeline<TContext, TResult>
         if (steps == null || steps.Length == 0)
         {
             throw new ArgumentException("Pipeline must have at least one step", nameof(steps));
+        }
+
+        if (typeof(TContext) == typeof(TResult))
+        {
+            throw new InvalidOperationException(
+                "Pipeline context type and result type cannot be the same. " +
+                "This may lead to ambiguous behavior.");
         }
 
         var stepTypeSet = new HashSet<Type>(steps);

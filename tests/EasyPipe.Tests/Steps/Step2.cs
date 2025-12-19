@@ -10,6 +10,7 @@ public class Step2 : IPipelineStep<TestContext, TestResult>
         CancellationToken ct = default)
     {
         context.ExecutedSteps.Add("Step2");
+        context.Counter += 20;
         return await next(context, ct);
     }
 }

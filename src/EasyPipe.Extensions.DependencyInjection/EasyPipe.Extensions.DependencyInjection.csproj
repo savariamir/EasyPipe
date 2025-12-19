@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Authors>Amir Savari, Mohammad ShafieZadeh</Authors>
+        <Authors>Amir Savari, Arian ShafieZadeh</Authors>
         <Title>EasyPipe</Title>
         <Description>Extension methods to integerate EasyPipe with Microsoft dependency injection</Description>
         <PackageProjectUrl>https://github.com/savariamir/EasyPipe</PackageProjectUrl>
         <PackageIcon>logo.png</PackageIcon>
         <RepositoryUrl>https://github.com/savariamir/EasyPipe</RepositoryUrl>
         <PackageTags>pipeline</PackageTags>
-        <Version>0.4.0</Version>
+        <Version>0.5.0</Version>
     </PropertyGroup>
 
     <ItemGroup>

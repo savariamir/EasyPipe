@@ -1,5 +1,3 @@
-// File: src/EasyPipe.Extensions.DependencyInjection/PipelineBuilder.cs
-
 using EasyPipe.Abstractions;
 using EasyPipe.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +15,7 @@ namespace EasyPipe.Extensions.DependencyInjection;
 ///     .AddStep&lt;ValidationStep&gt;()
 ///     .AddStep&lt;ProcessingStep&gt;()
 ///     .AddStep&lt;ResultStep&gt;()
-///     .WithDiagnostics&lt;PerformanceMonitoringDiagnostics&gt;()
-///     .Build();
+///     .WithDiagnostics&lt;Diagnostics&gt;();
 /// </code>
 /// </summary>
 public class PipelineBuilder<TContext, TResult>
@@ -30,7 +27,7 @@ public class PipelineBuilder<TContext, TResult>
     public PipelineBuilder(IServiceCollection services)
     {
         _services = services;
-        _stepTypes = new List<Type>();
+        _stepTypes = [];
         _diagnosticsType = null;
     }
 
@@ -53,7 +50,8 @@ public class PipelineBuilder<TContext, TResult>
     /// <typeparam name="TDiagnostics">The diagnostics implementation type</typeparam>
     /// <returns>This builder for fluent chaining</returns>
     /// <exception cref="InvalidOperationException">If diagnostics type doesn't implement IPipelineDiagnostics</exception>
-    public PipelineBuilder<TContext, TResult> WithDiagnostics<TDiagnostics>() where TDiagnostics : class, IPipelineDiagnostics
+    public PipelineBuilder<TContext, TResult> WithDiagnostics<TDiagnostics>()
+        where TDiagnostics : class, IPipelineDiagnostics
     {
         if (!typeof(IPipelineDiagnostics).IsAssignableFrom(typeof(TDiagnostics)))
         {

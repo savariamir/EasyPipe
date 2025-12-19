@@ -2,13 +2,12 @@
 
     <PropertyGroup>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <Authors>Mohammad ShafieZadeh, Amir Savari</Authors>
+        <Authors>Amir Savari, Arian ShafieZadeh</Authors>
         <Title>EasyPipe</Title>
-        <Company>Zoomit</Company>
         <Description>simple and lightweight library to build pipelines in .NET</Description>
-        <PackageProjectUrl>https://github.com/zoomit-org/EasyPipe</PackageProjectUrl>
+        <PackageProjectUrl>>https://github.com/savariamir/EasyPipe</PackageProjectUrl>
         <PackageIcon>logo.png</PackageIcon>
-        <RepositoryUrl>https://github.com/zoomit-org/EasyPipe</RepositoryUrl>
+        <RepositoryUrl>>https://github.com/savariamir/EasyPipe</RepositoryUrl>
         <PackageTags>pipeline</PackageTags>
         <Version>0.2.0</Version>
     </PropertyGroup>
